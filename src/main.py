@@ -3,7 +3,7 @@
 実行:
     python src/main.py
     python -m src.main
-    python src/main.py --config config/sites.yaml --site JST
+    python src/main.py --config config/sites.yaml --site SiteA
 """
 
 import argparse

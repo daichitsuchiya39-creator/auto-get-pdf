@@ -12,11 +12,11 @@
 sites:
 
   # 以下は書き方の例です。実際に使うサイトに書き換えてください。
-  - name: IPA
-    url: https://www.ipa.go.jp/shiken/mondai-kaiotu/2025r07.html
+  - name: SiteA
+    url: https://example.com/documents/index.html
 
-  - name: JST
-    url: https://www.jst.go.jp/souhatsu/call/index.html
+  - name: SiteB
+    url: https://example.org/call/index.html
 
 # 共通設定（省略時は既定値）
 settings:

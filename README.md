@@ -50,8 +50,8 @@ python src/main.py
 
 ```bash
 python src/main.py                    # 登録した全サイトを巡回
-python src/main.py --site IPA         # 指定したサイトだけ実行
-python src/main.py --site IPA --site JST   # 複数指定
+python src/main.py --site SiteA       # 指定したサイトだけ実行
+python src/main.py --site SiteA --site SiteB   # 複数指定
 python -m src.main                    # 別の起動方法（結果は同じ）
 ```
 
@@ -70,8 +70,8 @@ python -m src.main                    # 別の起動方法（結果は同じ）
 
 ```yaml
 sites:
-  - name: 文部科学省
-    url: https://www.mext.go.jp/...
+  - name: SiteC
+    url: https://example.net/documents/
 ```
 
 `settings` では、タイムアウト・リトライ回数・リクエスト間隔などを変更できます。
@@ -98,11 +98,11 @@ sites:
 ```text
 data/
 ├─ index.json            # 取得済み PDF の台帳（SHA256 → 取得元URL・保存先・分類など）
-├─ IPA/
+├─ SiteA/
 │   └─ 2026-10-22/
 │       ├─ sample.pdf
 │       └─ sample_1.pdf  # 同名・別内容のファイルは連番で保存
-└─ JST/
+└─ SiteB/
     └─ 2026-10-22/
 logs/
 └─ 2026-10-22.log
