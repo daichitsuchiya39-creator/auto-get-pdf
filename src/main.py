@@ -24,17 +24,22 @@ from src.downloader import Downloader  # noqa: E402
 from src.file_classifier import Classifier, KeywordClassifier  # noqa: E402
 from src.logger import setup_logger  # noqa: E402
 from src.pdf_manager import FileManager, PdfIndex  # noqa: E402
+from src.robots import RobotsChecker  # noqa: E402
 
 DEFAULT_SETTINGS = {
     "timeout": 30,
     "max_retries": 3,
     "request_interval": 1.0,
     "skip_known_urls": True,
+    "respect_robots": True,
     "user_agent": DEFAULT_USER_AGENT,
 }
 
 
 def load_config(path: Path) -> tuple[list[dict], dict]:
+    if not path.exists():
+        example = path.with_name("sites.example.yaml")
+        raise FileNotFoundError(f"{path} がありません。{example.name} をコピーして作成してください。")
     with open(path, encoding="utf-8") as f:
         config = yaml.safe_load(f) or {}
     sites = config.get("sites") or []
@@ -51,10 +56,15 @@ def build_classifier() -> Classifier:
 
 
 def collect_site(site: dict, crawler: Crawler, extractor: PdfExtractor, downloader: Downloader,
-                 files: FileManager, index: PdfIndex, classifier: Classifier, settings: dict, log) -> dict:
+                 files: FileManager, index: PdfIndex, classifier: Classifier, robots: RobotsChecker,
+                 settings: dict, log) -> dict:
     name, url = site["name"], site["url"]
     stats = {"found": 0, "downloaded": 0, "skipped": 0, "failed": 0}
     log.info(f"SITE: {name} {url}")
+
+    if not robots.allowed(url):
+        log.warning(f"SKIP (robots.txt で禁止): {url}")
+        return stats
 
     html = crawler.fetch(url)
     links = extractor.extract_pdf_entries(html, base_url=url)
@@ -65,6 +75,11 @@ def collect_site(site: dict, crawler: Crawler, extractor: PdfExtractor, download
         if settings["skip_known_urls"] and index.has_url(link.url):
             stats["skipped"] += 1
             log.info(f"SKIP (取得済みURL): {link.url}")
+            continue
+
+        if not robots.allowed(link.url):
+            stats["skipped"] += 1
+            log.info(f"SKIP (robots.txt で禁止): {link.url}")
             continue
 
         time.sleep(settings["request_interval"])
@@ -136,12 +151,13 @@ def main(argv: list[str] | None = None) -> int:
     files = FileManager(args.data_dir)
     index = PdfIndex(args.data_dir)
     classifier = build_classifier()
+    robots = RobotsChecker(crawler.session, timeout=settings["timeout"], enabled=settings["respect_robots"])
 
     total = {"found": 0, "downloaded": 0, "skipped": 0, "failed": 0}
     failed_sites = []
     for site in sites:
         try:
-            stats = collect_site(site, crawler, extractor, downloader, files, index, classifier, settings, log)
+            stats = collect_site(site, crawler, extractor, downloader, files, index, classifier, robots, settings, log)
         except Exception as e:
             failed_sites.append(site["name"])
             log.error(f"SITE FAILED: {site['name']} - {e}")

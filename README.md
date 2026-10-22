@@ -1,10 +1,12 @@
 # 研究費・公募情報 PDF 収集システム
 
-`config/sites.yaml` に登録した Web ページを巡回し、ページ内の PDF を自動でダウンロードします。
+指定した Web ページから PDF のリンクを探し、自動でダウンロードして整理する汎用ツールです。
+巡回するページは `config/sites.yaml` に自分で登録します。
 
 - 取得先はサイト別・日付別のフォルダに整理して保存します
 - 取得済みの PDF は重複判定（URL と SHA256）で除外するので、毎日実行しても新しい PDF だけが増えます
 - 実行の記録は `logs/` に残ります
+- `robots.txt` で禁止されているページ・PDF は取得しません
 
 ## ドキュメント
 
@@ -27,9 +29,17 @@ cd auto-get-pdf
 # 2) ライブラリをインストール（初回のみ）
 pip install -r requirements.txt
 
-# 3) 実行
+# 3) 設定ファイルを作る（初回のみ）
+copy config\sites.example.yaml config\sites.yaml     # Windows
+# cp config/sites.example.yaml config/sites.yaml     # Mac / Linux
+
+# 4) config/sites.yaml を開き、巡回したいページを書く
+
+# 5) 実行
 python src/main.py
 ```
+
+> `config/sites.yaml` は各自の設定ファイルで、Git には上がりません。サンプルは `config/sites.example.yaml` です。
 
 
 実行すると `data/` と `logs/` が自動で作られ、PDF が保存されます。
@@ -71,6 +81,18 @@ sites:
 
 ---
 
+## 利用上の注意
+
+このツールは、公開されている Web ページから PDF を取得するものです。使う人の責任で、次の点を守ってください。
+
+- 取得する前に、対象サイトの**利用規約**を確認してください。自動取得を禁止しているサイトでは使わないでください。
+- 既定では `robots.txt` を確認し、禁止されているページ・PDF は取得しません（`respect_robots: true`）。
+  `robots.txt` を確認できないとき（アクセス拒否やサーバーエラー）も、安全のため取得しません。
+- 相手のサーバーに負担をかけないよう、1 件ごとに待機時間を入れています（`request_interval`）。短くしすぎないでください。
+- 取得した PDF の著作権は、元のサイトの運営者などにあります。再配布や公開は、各サイトの利用条件に従ってください。
+
+---
+
 ## 3. 出力
 
 ```text
@@ -103,7 +125,8 @@ logs/
 
 | 含める | 含めない（`.gitignore` 済み） |
 |---|---|
-| `src/`、`config/sites.yaml`、`requirements.txt`、`README.md` | `data/`（取得した PDF と台帳） |
+| `src/`、`config/sites.example.yaml`、`requirements.txt`、`README.md`、`docs/` | `config/sites.yaml`（自分用の設定） |
+| | `data/`（取得した PDF と台帳） |
 | | `logs/`（実行ログ） |
 | | `__pycache__/`、`.venv/` |
 
@@ -119,7 +142,7 @@ git commit -m "巡回サイトにNEDOを追加"
 git push
 ```
 
-巡回サイトの追加は `config/sites.yaml` の変更だけで済むので、コミットも小さくなります。
+巡回サイトの追加は `config/sites.yaml`（自分用）の変更だけで済みます。リポジトリには影響しません。
 
 ### 最新版を取り込む（pull）
 
@@ -139,8 +162,8 @@ git remote add origin https://github.com/daichitsuchiya39-creator/auto-get-pdf.g
 git push -u origin main
 ```
 
-> **注意：** `config/sites.yaml` に、パスワードや個人のトークンが入った URL を書かないでください。
-> GitHub に公開される可能性があります。
+> **注意：** `config/sites.yaml` は Git に上がりませんが、`config/sites.example.yaml` は公開されます。
+> サンプルには、パスワードや個人のトークンが入った URL を書かないでください。
 
 ---
 
@@ -162,6 +185,7 @@ schtasks /create /tn "PDF自動取得" /sc daily /st 08:00 /tr "python C:\パス
 |---|---|---|
 | `src/crawler.py` | `Crawler` / `PdfExtractor` | HTML 取得（リトライ・タイムアウト） / PDF リンク抽出（`.pdf` `.PDF`） |
 | `src/downloader.py` | `Downloader` | PDF ダウンロード・SHA256 計算 |
+| `src/robots.py` | `RobotsChecker` | robots.txt の確認（禁止されたページ・PDF は取得しない） |
 | `src/pdf_manager.py` | `FileManager` / `PdfIndex` | 保存先フォルダ管理・連番保存 / 取得済み台帳 |
 | `src/file_classifier.py` | `KeywordClassifier` | 分類タグ付け（現状はキーワード判定） |
 | `src/logger.py` | — | ログ出力 |

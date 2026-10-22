@@ -1,0 +1,28 @@
+# 巡回対象サイトの設定（サンプル）
+#
+# 使い方:
+#   1. このファイルを config/sites.yaml という名前でコピーする
+#   2. コピーしたファイルに、自分が巡回したいページを書く
+#      (config/sites.yaml は .gitignore 済みなので、Git には上がりません)
+#
+# ご利用の前に、対象サイトの利用規約と robots.txt を必ず確認してください。
+
+# name: 保存フォルダ名（data/<name>/<取得日>/ に保存される）
+# url : PDFリンクを含むページのURL（このページ1枚だけを読みます）
+sites:
+
+  # 以下は書き方の例です。実際に使うサイトに書き換えてください。
+  - name: IPA
+    url: https://www.ipa.go.jp/shiken/mondai-kaiotu/2025r07.html
+
+  - name: JST
+    url: https://www.jst.go.jp/souhatsu/call/index.html
+
+# 共通設定（省略時は既定値）
+settings:
+  timeout: 30              # 通信タイムアウト（秒）
+  max_retries: 3           # 通信エラー時の最大試行回数
+  request_interval: 1.0    # リクエスト間の待機秒数（サーバ負荷軽減）
+  skip_known_urls: true    # 過去に取得済みのURLは再ダウンロードしない
+  respect_robots: true     # robots.txt で禁止されたページ・PDFは取得しない
+  user_agent: "Mozilla/5.0 (compatible; PdfCollector/1.0)"
