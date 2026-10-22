@@ -1,0 +1,12 @@
+requests>=2.32
+beautifulsoup4>=4.12
+PyYAML>=6.0
+tqdm>=4.66
+python-dateutil>=2.9
+
+# 将来利用（Phase2 以降）
+# pdfplumber
+# pymupdf
+# openai
+# pandas
+# openpyxl
