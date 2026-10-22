@@ -1,4 +1,4 @@
-# 研究費・公募情報 PDF 収集システム
+# PDF自動取得システム
 
 指定した Web ページから PDF のリンクを探し、自動でダウンロードして整理する汎用ツールです。
 巡回するページは `config/sites.yaml` に自分で登録します。
@@ -199,3 +199,7 @@ schtasks /create /tn "PDF自動取得" /sc daily /st 08:00 /tr "python C:\パス
 - **通知**: `main.collect_site()` で新規保存したタイミング（`SUCCESS` ログ直後）に通知処理を追加できます。
 - **リンクをたどる巡回**: ページ内のリンク先も巡回する機能を追加できます。
 - **JavaScript で描画されるサイト**: `Crawler.fetch()` を Playwright 版に差し替えます。
+
+## ライセンス
+
+[MIT License](LICENSE)
